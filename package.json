@@ -1,0 +1,17 @@
+{
+  "name": "signal-state-machine",
+  "description": "",
+  "version": "0.0.0",
+  "license": "Apache-2.0",
+  "author": "Soheil Nazari <kontakt@soheilnazari.de>",
+  "type": "module",
+  "module": "dist/index.mjs",
+  "scripts": {
+    "build": "node ./scripts/build.js",
+    "test": "node --test --watch",
+    "test:with:coverage": "node --test --watch --experimental-test-coverage"
+  },
+  "devDependencies": {
+    "esbuild": "0.23.1"
+  }
+}
