@@ -3,7 +3,7 @@
 import esbuild from 'esbuild'
 
 await esbuild.build({
-  entryPoints: ['./src/index.js'],
+  entryPoints: ['./src/index.ts'],
   bundle: true,
   outdir: './dist',
   outExtension: {
@@ -11,4 +11,5 @@ await esbuild.build({
   },
   format: 'esm',
   minify: true,
+  tsconfig: './tsconfig.json',
 })

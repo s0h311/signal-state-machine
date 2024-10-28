@@ -1,6 +1,7 @@
-import { createMachine, TRANSITION_FAILURE } from './machine.js'
+import { TRANSITION_FAILURE } from './consts.ts'
+import { createMachine } from './machine.ts'
 
-const machine = createMachine({
+const blueprint = {
   initialState: {
     name: 'initial',
     value: 'initial',
@@ -35,7 +36,6 @@ const machine = createMachine({
       },
     },
   },
-})
+}
 
-await machine.fetch()
-await machine.fetch()
+const machine = createMachine(blueprint)

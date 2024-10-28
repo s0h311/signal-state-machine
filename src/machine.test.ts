@@ -1,8 +1,6 @@
-import { describe, it } from 'node:test'
-import assert from 'node:assert'
-import { createMachine } from './machine.js'
-import IllegalTransitionError from './IllegalTransitionError.js'
-import { TRANSITION_FAILURE } from './consts.js'
+import { createMachine } from './machine.ts'
+import IllegalTransitionError from './IllegalTransitionError.ts'
+import { TRANSITION_FAILURE } from './consts.ts'
 
 function getSimpleMachine() {
   return createMachine({
@@ -46,7 +44,7 @@ function getSuccessfulEffectFullMachine() {
           value: TRANSITION_FAILURE,
         },
         effect: {
-          run: () => {
+          run: (): Promise<string[] | typeof TRANSITION_FAILURE> => {
             return new Promise((resolve) => {
               const cities = ['London', 'Hamburg', 'Los Angeles']
 
@@ -129,13 +127,6 @@ function getSuccessfulActionFullMachine() {
 }
 
 describe('machine creation', () => {
-  it('should have the someSimpleTransition function', () => {
-    const machine = getSimpleMachine()
-
-    const actual = 'someSimpleTransition' in machine
-    assert.strictEqual(actual, true)
-  })
-
   it('should have correct initialState', () => {
     const machine = getSimpleMachine()
 
@@ -145,7 +136,7 @@ describe('machine creation', () => {
       value: 'someValue',
     }
 
-    assert.deepEqual(actual, expected)
+    expect(actual).toEqual(expected)
   })
 
   it('should have correct initialState if it is effectfull', () => {
@@ -157,14 +148,18 @@ describe('machine creation', () => {
       value: 'initial',
     }
 
-    assert.deepEqual(actual, expected)
+    expect(actual).toEqual(expected)
   })
 })
 
 describe('machine transitions', () => {
+  beforeEach(() => vi.useFakeTimers())
+
+  afterEach(() => vi.restoreAllMocks())
+
   it('should transition to the correct targetState', () => {
     const machine = getSimpleMachine()
-    machine.someSimpleTransition()
+    machine.transitionTo('someSimpleTransition')
 
     const actual = machine.getCurrentState()
     const expected = {
@@ -172,92 +167,79 @@ describe('machine transitions', () => {
       value: 'someTargetStateValue',
     }
 
-    assert.deepEqual(actual, expected)
+    expect(actual).toEqual(expected)
   })
 
-  it('should transition to correct targetState when an effect is triggered', (context) => {
+  it('should transition to correct targetState when an effect is triggered', () => {
     const machine = getSuccessfulEffectFullMachine()
 
-    context.mock.timers.enable({ apis: ['setTimeout'] })
-
-    machine.fetch()
+    machine.transitionTo('fetch')
 
     const actual = machine.getCurrentState()
 
-    context.mock.timers.runAll()
+    vi.runAllTimers()
 
     const expected = {
       name: 'fetching',
       value: 'fetching',
     }
 
-    assert.deepEqual(actual, expected)
+    expect(actual).toEqual(expected)
   })
 
-  it('should transition to correct successState after an effect is executed', (context, done) => {
-    const machine = getSuccessfulEffectFullMachine()
+  it('should transition to correct successState after an effect is executed', (): Promise<void> => {
+    return new Promise((done) => {
+      const machine = getSuccessfulEffectFullMachine()
 
-    context.mock.timers.enable({ apis: ['setTimeout'] })
+      machine.transitionTo('fetch').then(() => {
+        const actual = machine.getCurrentState()
+        const expected = {
+          name: 'fetched',
+          value: ['London', 'Hamburg', 'Los Angeles'],
+        }
 
-    machine.fetch().then(() => {
-      const actual = machine.getCurrentState()
-      const expected = {
-        name: 'fetched',
-        value: ['London', 'Hamburg', 'Los Angeles'],
-      }
+        expect(actual).toEqual(expected)
 
-      assert.deepEqual(actual, expected)
-
-      done()
-    })
-
-    context.mock.timers.runAll()
-  })
-
-  it('should transition to correct failureState after an efffect is failed', (context, done) => {
-    const machine = getFailingEffectFullMachine()
-
-    context.mock.timers.enable({ apis: ['setTimeout'] })
-
-    machine.fetch().then(() => {
-      const actual = machine.getCurrentState()
-      const expected = {
-        name: 'fetchFailed',
-        value: TRANSITION_FAILURE,
-      }
-
-      assert.deepEqual(actual, expected)
-
-      done()
-    })
-
-    context.mock.timers.runAll()
-  })
-
-  it('should throw an error if the sourceState of the transition that is called does not match the currentState', (context, done) => {
-    const machine = getSuccessfulEffectFullMachine()
-
-    context.mock.timers.enable({ apis: ['setTimeout'] })
-
-    machine.fetch().then(() => {
-      const expected = new IllegalTransitionError('fetched', 'fetch', {
-        sourceState: {
-          name: 'initial',
-          value: 'initial',
-        },
-        targetState: {
-          name: 'fetching',
-          value: 'fetching',
-        },
+        done()
       })
 
-      assert.throws(() => {
-        machine.fetch()
-      }, expected)
-
-      done()
+      vi.runAllTimers()
     })
+  })
 
-    context.mock.timers.runAll()
+  it('should transition to correct failureState after an efffect is failed', (): Promise<void> => {
+    return new Promise((done) => {
+      const machine = getFailingEffectFullMachine()
+
+      machine.transitionTo('fetch').then(() => {
+        const actual = machine.getCurrentState()
+        const expected = {
+          name: 'fetchFailed',
+          value: TRANSITION_FAILURE,
+        }
+
+        expect(actual).toEqual(expected)
+
+        done()
+      })
+
+      vi.runAllTimers()
+    })
+  })
+
+  it('should throw an error if the sourceState of the transition that is called does not match the currentState', (): Promise<void> => {
+    return new Promise((done) => {
+      const machine = getSuccessfulEffectFullMachine()
+
+      machine.transitionTo('fetch').then(() => {
+        const expectedError = new IllegalTransitionError('fetched', 'fetch', 'initial', 'fetching')
+
+        expect(() => machine.transitionTo('fetch')).toThrowError(expectedError.message)
+
+        done()
+      })
+
+      vi.runAllTimers()
+    })
   })
 })

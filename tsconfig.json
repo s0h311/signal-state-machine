@@ -6,6 +6,10 @@
     "moduleResolution": "Bundler",
     "module": "ESNext",
     "target": "ES2022",
-    "lib": ["ESNext", "Dom"]
+    "lib": ["ESNext", "Dom", "Dom.Iterable"],
+    "noEmit": true,
+    "emitDeclarationOnly": true,
+    "allowImportingTsExtensions": true,
+    "types": ["vitest/globals"]
   }
 }
