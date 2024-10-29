@@ -48,7 +48,7 @@ export type MachineTransitions = {
 export type Machine<SrcState, TState, FState, SState> = {
   _currentState: State<SrcState | TState | FState | SState>
   _transitions: MachineTransitions
-  identifier: Symbol
+  _identifier: Symbol
   getCurrentState: () => State<SrcState | TState | FState | SState>
   // TODO fix: Promise<SState>
   transitionTo: (transitionName: string) => Promise<SState>

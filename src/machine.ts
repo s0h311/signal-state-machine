@@ -13,7 +13,7 @@ export function createMachine<SrcState, TState, FState, SState>(
   const machine: Machine<SrcState, TState, FState, SState> = {
     _currentState: initialState,
     _transitions: {},
-    identifier,
+    _identifier: identifier,
     getCurrentState() {
       return this._currentState
     },
