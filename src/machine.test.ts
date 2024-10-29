@@ -1,7 +1,10 @@
 import { createMachine } from './machine.ts'
 import IllegalTransitionError from './IllegalTransitionError.ts'
 import { TRANSITION_FAILURE } from './consts.ts'
+import TransitionNotFoundError from './TransitionNotFoundError.ts'
+import { Machine } from './types.ts'
 
+const someSimpleTransition = 'someSimpleTransition'
 function getSimpleMachine() {
   return createMachine({
     initialState: {
@@ -9,7 +12,7 @@ function getSimpleMachine() {
       value: 'someValue',
     },
     transitions: {
-      someSimpleTransition: {
+      [someSimpleTransition]: {
         sourceState: {
           name: 'someState',
           value: 'someValue',
@@ -23,6 +26,7 @@ function getSimpleMachine() {
   })
 }
 
+const fetchTransition = 'fetch'
 function getSuccessfulEffectFullMachine() {
   return createMachine({
     initialState: {
@@ -30,7 +34,7 @@ function getSuccessfulEffectFullMachine() {
       value: 'initial',
     },
     transitions: {
-      fetch: {
+      [fetchTransition]: {
         sourceState: {
           name: 'initial',
           value: 'initial',
@@ -48,7 +52,6 @@ function getSuccessfulEffectFullMachine() {
             return new Promise((resolve) => {
               const cities = ['London', 'Hamburg', 'Los Angeles']
 
-              // setTimeout(() => resolve(TRANSITION_FAILURE), 3000)
               setTimeout(() => resolve(cities), 3000)
             })
           },
@@ -69,7 +72,7 @@ function getFailingEffectFullMachine() {
       value: 'initial',
     },
     transitions: {
-      fetch: {
+      [fetchTransition]: {
         sourceState: {
           name: 'initial',
           value: 'initial',
@@ -84,11 +87,8 @@ function getFailingEffectFullMachine() {
         },
         effect: {
           run: () => {
-            return new Promise((resolve) => {
-              const cities = ['London', 'Hamburg', 'Los Angeles']
-
-              setTimeout(() => resolve(TRANSITION_FAILURE), 3000)
-              // setTimeout(() => resolve(cities), 3000)
+            return new Promise((_, reject) => {
+              setTimeout(() => reject(TRANSITION_FAILURE), 3000)
             })
           },
           successState: {
@@ -101,26 +101,40 @@ function getFailingEffectFullMachine() {
   })
 }
 
-function getSuccessfulActionFullMachine() {
+const addToCartTransition = 'addToCart'
+const addToCartAgainTransition = 'addToCartAgain'
+function getActionFullMachine() {
   return createMachine({
     initialState: {
-      name: 'Hamburg',
-      value: 'Hamburg',
+      name: 'emptyCart',
+      value: [],
     },
     transitions: {
-      fetch: {
+      [addToCartTransition]: {
         sourceState: {
-          name: 'Hamburg',
-          value: 'Hamburg',
+          name: 'emptyCart',
+          value: [],
         },
         targetState: {
-          name: '',
-          value: null,
+          name: 'cartWithItem',
+          value: [],
         },
-        action: () => ({
-          name: 'London',
-          value: 'London',
-        }),
+        action: (state) => {
+          return [...state.value, 'newItem1']
+        },
+      },
+      [addToCartAgainTransition]: {
+        sourceState: {
+          name: 'cartWithItem',
+          value: [],
+        },
+        targetState: {
+          name: 'cartWithItem',
+          value: [],
+        },
+        action: (state) => {
+          return [...state.value, 'newItem2']
+        },
       },
     },
   })
@@ -139,7 +153,7 @@ describe('machine creation', () => {
     expect(actual).toEqual(expected)
   })
 
-  it('should have correct initialState if it is effectfull', () => {
+  it('should have correct initialState, if it is effectfull', () => {
     const machine = getSuccessfulEffectFullMachine()
 
     const actual = machine.getCurrentState()
@@ -159,7 +173,7 @@ describe('machine transitions', () => {
 
   it('should transition to the correct targetState', () => {
     const machine = getSimpleMachine()
-    machine.transitionTo('someSimpleTransition')
+    machine.transitionTo(someSimpleTransition)
 
     const actual = machine.getCurrentState()
     const expected = {
@@ -173,7 +187,7 @@ describe('machine transitions', () => {
   it('should transition to correct targetState when an effect is triggered', () => {
     const machine = getSuccessfulEffectFullMachine()
 
-    machine.transitionTo('fetch')
+    machine.transitionTo(fetchTransition)
 
     const actual = machine.getCurrentState()
 
@@ -191,7 +205,7 @@ describe('machine transitions', () => {
     return new Promise((done) => {
       const machine = getSuccessfulEffectFullMachine()
 
-      machine.transitionTo('fetch').then(() => {
+      machine.transitionTo(fetchTransition).then(() => {
         const actual = machine.getCurrentState()
         const expected = {
           name: 'fetched',
@@ -211,7 +225,7 @@ describe('machine transitions', () => {
     return new Promise((done) => {
       const machine = getFailingEffectFullMachine()
 
-      machine.transitionTo('fetch').then(() => {
+      machine.transitionTo(fetchTransition).then(() => {
         const actual = machine.getCurrentState()
         const expected = {
           name: 'fetchFailed',
@@ -227,19 +241,117 @@ describe('machine transitions', () => {
     })
   })
 
-  it('should throw an error if the sourceState of the transition that is called does not match the currentState', (): Promise<void> => {
-    return new Promise((done) => {
-      const machine = getSuccessfulEffectFullMachine()
+  it('should transitions to targetState with correct value after an action is executed', () => {
+    const machine = getActionFullMachine()
 
-      machine.transitionTo('fetch').then(() => {
-        const expectedError = new IllegalTransitionError('fetched', 'fetch', 'initial', 'fetching')
+    machine.transitionTo(addToCartTransition)
 
-        expect(() => machine.transitionTo('fetch')).toThrowError(expectedError.message)
+    const actual = machine.getCurrentState()
+    const expected = {
+      name: 'cartWithItem',
+      value: ['newItem1'],
+    }
 
-        done()
+    expect(actual).toEqual(expected)
+  })
+
+  it.each<{
+    testCase: string
+    input: {
+      machine: Machine<any, any, any, any>
+      firstTransition: string
+      secondTransition: string
+    }
+    expected: string
+  }>([
+    {
+      testCase:
+        'should throw an IllegalTransitionError, if effectful transition from sourceState to targetState is not allowed even if they are the same',
+      input: {
+        machine: getSuccessfulEffectFullMachine(),
+        firstTransition: fetchTransition,
+        secondTransition: fetchTransition,
+      },
+      expected: new IllegalTransitionError('fetched', fetchTransition, 'initial', 'fetching')
+        .message,
+    },
+  ])(
+    '$testCase',
+    ({ input: { machine, firstTransition, secondTransition }, expected }): Promise<void> => {
+      return new Promise((done) => {
+        machine.transitionTo(firstTransition).then(() => {
+          expect(() => machine.transitionTo(secondTransition)).toThrowError(expected)
+
+          done()
+        })
+
+        vi.runAllTimers()
       })
+    }
+  )
 
-      vi.runAllTimers()
-    })
+  it.each<{
+    testCase: string
+    input: {
+      machine: Machine<any, any, any, any>
+      firstTransition: string
+      secondTransition: string
+    }
+    expected: string
+  }>([
+    {
+      testCase:
+        'should throw an IllegalTransitionError, if actionful transition from sourceState to targetState is not allowed even if they are the same',
+      input: {
+        machine: getActionFullMachine(),
+        firstTransition: addToCartTransition,
+        secondTransition: addToCartTransition,
+      },
+      expected: new IllegalTransitionError(
+        'cartWithItem',
+        addToCartTransition,
+        'emptyCart',
+        'cartWithItem'
+      ).message,
+    },
+  ])('$testCase', ({ input: { machine, firstTransition, secondTransition }, expected }) => {
+    machine.transitionTo(firstTransition)
+
+    expect(() => machine.transitionTo(secondTransition)).toThrowError(expected)
+  })
+
+  it.each<{
+    testCase: string
+    input: {
+      machine: Machine<any, any, any, any>
+      firstTransition: string
+      secondTransition: string
+    }
+  }>([
+    {
+      testCase:
+        'should not throw an IllegalTransitionError, if actionful transition from sourceState to targetState is allowed even if they are the same',
+      input: {
+        machine: getActionFullMachine(),
+        firstTransition: addToCartTransition,
+        secondTransition: addToCartAgainTransition,
+      },
+    },
+  ])('$testCase', ({ input: { machine, firstTransition, secondTransition } }) => {
+    machine.transitionTo(firstTransition)
+
+    machine.transitionTo(secondTransition)
+
+    expect(1).toBe(1)
+  })
+
+  it('should throw a TransitionNotFoundError, if transitionTo is called with a not existing transitionName', () => {
+    const machine = getSuccessfulEffectFullMachine()
+
+    const expectedError = new TransitionNotFoundError('someTransitionThatNotExists')
+
+    expect(() => {
+      machine.transitionTo('someTransitionThatNotExists')
+    }).toThrowError(expectedError.message)
   })
 })

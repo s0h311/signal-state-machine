@@ -23,7 +23,7 @@ export type SimpleTransition<SrcState, TState> = {
 export type ActionfulTransition<SrcState, TState> = {
   sourceState: State<SrcState>
   targetState: State<TState>
-  action: () => TState
+  action: (state: State<SrcState>) => TState
 }
 
 export type EffectfulTransition<SrcState, TState, FState, SState> = {
@@ -31,7 +31,7 @@ export type EffectfulTransition<SrcState, TState, FState, SState> = {
   targetState: State<TState>
   failureState: State<FState>
   effect: {
-    run: () => Promise<SState | typeof TRANSITION_FAILURE>
+    run: (state: State<SrcState>) => Promise<SState | typeof TRANSITION_FAILURE>
     successState: State<SState>
   }
 }

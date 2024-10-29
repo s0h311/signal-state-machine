@@ -2,7 +2,7 @@ import { TRANSITION_FAILURE } from './consts.ts'
 import IllegalTransitionError from './IllegalTransitionError.ts'
 import { machineRegistery } from './machineRegistery.ts'
 import TransitionNotFoundError from './TransitionNotFoundError.ts'
-import { Blueprint, Machine } from './types.ts'
+import { Blueprint, Machine, State } from './types.ts'
 
 export function createMachine<SrcState, TState, FState, SState>(
   blueprint: Blueprint<SrcState, TState, FState, SState>
@@ -42,20 +42,29 @@ export function createMachine<SrcState, TState, FState, SState>(
       transitionFn = () => {
         machine._currentState = transition.targetState
 
-        return transition.effect.run().then((result) => {
-          if (result === TRANSITION_FAILURE) {
+        /**
+         * If the promise returns TRANSITION_FAILURE or it rejects failureState
+         * will be set as next.
+         */
+        return transition.effect
+          .run(machine._currentState as State<SrcState>)
+          .then((result) => {
+            if (result === TRANSITION_FAILURE) {
+              machine._currentState = transition.failureState
+            } else {
+              transition.effect.successState.value = result
+              machine._currentState = transition.effect.successState
+            }
+          })
+          .catch(() => {
             machine._currentState = transition.failureState
-          } else {
-            transition.effect.successState.value = result
-            machine._currentState = transition.effect.successState
-          }
-        })
+          })
       }
     }
 
     if (hasAction) {
       transitionFn = () => {
-        const result = transition.action()
+        const result = transition.action(machine._currentState as State<SrcState>)
         transition.targetState.value = result
         machine._currentState = transition.targetState
       }
