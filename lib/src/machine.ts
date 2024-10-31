@@ -50,14 +50,14 @@ export function createMachine<SrcState, TState, FState, SState>(
           .run(machine._currentState as State<SrcState>)
           .then((result) => {
             if (result === TRANSITION_FAILURE) {
-              machine._currentState = transition.failureState
+              machine._currentState = transition.effect.failureState
             } else {
               transition.effect.successState.value = result
               machine._currentState = transition.effect.successState
             }
           })
           .catch(() => {
-            machine._currentState = transition.failureState
+            machine._currentState = transition.effect.failureState
           })
       }
     }
