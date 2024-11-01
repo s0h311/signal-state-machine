@@ -7,20 +7,12 @@ import { Machine } from './types.ts'
 const someSimpleTransition = 'someSimpleTransition'
 function getSimpleMachine() {
   return createMachine({
-    initialState: {
-      name: 'someState',
-      value: 'someValue',
-    },
+    state: 'someState',
+    value: 'who cares?',
     transitions: {
       [someSimpleTransition]: {
-        sourceState: {
-          name: 'someState',
-          value: 'someValue',
-        },
-        targetState: {
-          name: 'someTargetState',
-          value: 'someTargetStateValue',
-        },
+        sourceState: 'someState',
+        targetState: 'someTargetState',
       },
     },
   })
@@ -29,37 +21,21 @@ function getSimpleMachine() {
 const fetchTransition = 'fetch'
 function getSuccessfulEffectFullMachine() {
   return createMachine({
-    initialState: {
-      name: 'initial',
-      value: 'initial',
-    },
+    state: 'initial',
+    value: [],
     transitions: {
       [fetchTransition]: {
-        sourceState: {
-          name: 'initial',
-          value: 'initial',
-        },
-        targetState: {
-          name: 'fetching',
-          value: 'fetching',
-        },
-        failureState: {
-          name: 'fetchFailed',
-          value: TRANSITION_FAILURE,
-        },
-        effect: {
-          run: (): Promise<string[] | typeof TRANSITION_FAILURE> => {
-            return new Promise((resolve) => {
-              const cities = ['London', 'Hamburg', 'Los Angeles']
+        sourceState: 'initial',
+        targetState: 'fetching',
+        effect: (): Promise<string[]> => {
+          return new Promise((resolve) => {
+            const cities = ['London', 'Hamburg', 'Los Angeles']
 
-              setTimeout(() => resolve(cities), 3000)
-            })
-          },
-          successState: {
-            name: 'fetched',
-            value: [],
-          },
+            setTimeout(() => resolve(cities), 3000)
+          })
         },
+        successState: 'fetched',
+        failureState: 'fetchFailed',
       },
     },
   })
@@ -67,35 +43,19 @@ function getSuccessfulEffectFullMachine() {
 
 function getFailingEffectFullMachine() {
   return createMachine({
-    initialState: {
-      name: 'initial',
-      value: 'initial',
-    },
+    state: 'initial',
+    value: [],
     transitions: {
       [fetchTransition]: {
-        sourceState: {
-          name: 'initial',
-          value: 'initial',
+        sourceState: 'initial',
+        targetState: 'fetching',
+        effect: () => {
+          return new Promise((_, reject) => {
+            setTimeout(() => reject(TRANSITION_FAILURE), 3000)
+          })
         },
-        targetState: {
-          name: 'fetching',
-          value: 'fetching',
-        },
-        failureState: {
-          name: 'fetchFailed',
-          value: TRANSITION_FAILURE,
-        },
-        effect: {
-          run: () => {
-            return new Promise((_, reject) => {
-              setTimeout(() => reject(TRANSITION_FAILURE), 3000)
-            })
-          },
-          successState: {
-            name: 'fetched',
-            value: [],
-          },
-        },
+        successState: 'fetched',
+        failureState: 'fetchFailed',
       },
     },
   })
@@ -105,35 +65,21 @@ const addToCartTransition = 'addToCart'
 const addToCartAgainTransition = 'addToCartAgain'
 function getActionFullMachine() {
   return createMachine({
-    initialState: {
-      name: 'emptyCart',
-      value: [],
-    },
+    state: 'emptyCart',
+    value: [],
     transitions: {
       [addToCartTransition]: {
-        sourceState: {
-          name: 'emptyCart',
-          value: [],
-        },
-        targetState: {
-          name: 'cartWithItem',
-          value: [],
-        },
-        action: (state) => {
-          return [...state.value, 'newItem1']
+        sourceState: 'emptyCart',
+        targetState: 'cartWithItem',
+        action: (value: string[]) => {
+          return [...value, 'newItem1']
         },
       },
       [addToCartAgainTransition]: {
-        sourceState: {
-          name: 'cartWithItem',
-          value: [],
-        },
-        targetState: {
-          name: 'cartWithItem',
-          value: [],
-        },
-        action: (state) => {
-          return [...state.value, 'newItem2']
+        sourceState: 'cartWithItem',
+        targetState: 'cartWithItem',
+        action: (value: string[]) => {
+          return [...value, 'newItem2']
         },
       },
     },
@@ -144,25 +90,29 @@ describe('machine creation', () => {
   it('should have correct initialState', () => {
     const machine = getSimpleMachine()
 
-    const actual = machine.getCurrentState()
-    const expected = {
-      name: 'someState',
-      value: 'someValue',
-    }
+    const actualState = machine.state()
+    const expectedState = 'someState'
 
-    expect(actual).toEqual(expected)
+    expect(actualState).toEqual(expectedState)
+
+    const actualValue = machine.value()
+    const expectedValue = 'who cares?'
+
+    expect(actualValue).toEqual(expectedValue)
   })
 
   it('should have correct initialState, if it is effectfull', () => {
     const machine = getSuccessfulEffectFullMachine()
 
-    const actual = machine.getCurrentState()
-    const expected = {
-      name: 'initial',
-      value: 'initial',
-    }
+    const actualState = machine.state()
+    const expectedState = 'initial'
 
-    expect(actual).toEqual(expected)
+    expect(actualState).toEqual(expectedState)
+
+    const actualValue = machine.value()
+    const expectedValue: string[] = []
+
+    expect(actualValue).toEqual(expectedValue)
   })
 })
 
@@ -175,13 +125,15 @@ describe('machine transitions', () => {
     const machine = getSimpleMachine()
     machine.transitionTo(someSimpleTransition)
 
-    const actual = machine.getCurrentState()
-    const expected = {
-      name: 'someTargetState',
-      value: 'someTargetStateValue',
-    }
+    const actualState = machine.state()
+    const expectedState = 'someTargetState'
 
-    expect(actual).toEqual(expected)
+    expect(actualState).toEqual(expectedState)
+
+    const actualValue = machine.value()
+    const expectedValue = 'who cares?'
+
+    expect(actualValue).toEqual(expectedValue)
   })
 
   it('should transition to correct targetState when an effect is triggered', () => {
@@ -189,16 +141,13 @@ describe('machine transitions', () => {
 
     machine.transitionTo(fetchTransition)
 
-    const actual = machine.getCurrentState()
+    const actualState = machine.state()
 
     vi.runAllTimers()
 
-    const expected = {
-      name: 'fetching',
-      value: 'fetching',
-    }
+    const expectedState = 'fetching'
 
-    expect(actual).toEqual(expected)
+    expect(actualState).toEqual(expectedState)
   })
 
   it('should transition to correct successState after an effect is executed', (): Promise<void> => {
@@ -206,13 +155,15 @@ describe('machine transitions', () => {
       const machine = getSuccessfulEffectFullMachine()
 
       machine.transitionTo(fetchTransition).then(() => {
-        const actual = machine.getCurrentState()
-        const expected = {
-          name: 'fetched',
-          value: ['London', 'Hamburg', 'Los Angeles'],
-        }
+        const actualState = machine.state()
+        const expectedState = 'fetched'
 
-        expect(actual).toEqual(expected)
+        expect(actualState).toEqual(expectedState)
+
+        const actualValue = machine.value()
+        const expectedValue = ['London', 'Hamburg', 'Los Angeles']
+
+        expect(actualValue).toEqual(expectedValue)
 
         done()
       })
@@ -226,13 +177,15 @@ describe('machine transitions', () => {
       const machine = getFailingEffectFullMachine()
 
       machine.transitionTo(fetchTransition).then(() => {
-        const actual = machine.getCurrentState()
-        const expected = {
-          name: 'fetchFailed',
-          value: TRANSITION_FAILURE,
-        }
+        const actualState = machine.state()
+        const expectedState = 'fetchFailed'
 
-        expect(actual).toEqual(expected)
+        expect(actualState).toEqual(expectedState)
+
+        const actualValue = machine.value()
+        const expectedValue: string[] = []
+
+        expect(actualValue).toEqual(expectedValue)
 
         done()
       })
@@ -246,19 +199,21 @@ describe('machine transitions', () => {
 
     machine.transitionTo(addToCartTransition)
 
-    const actual = machine.getCurrentState()
-    const expected = {
-      name: 'cartWithItem',
-      value: ['newItem1'],
-    }
+    const actualState = machine.state()
+    const expectedState = 'cartWithItem'
 
-    expect(actual).toEqual(expected)
+    expect(actualState).toEqual(expectedState)
+
+    const actualValue = machine.value()
+    const expectedValue = ['newItem1']
+
+    expect(actualValue).toEqual(expectedValue)
   })
 
   it.each<{
     testCase: string
     input: {
-      machine: Machine<any, any, any, any>
+      machine: Machine<any, any>
       firstTransition: string
       secondTransition: string
     }
@@ -293,7 +248,7 @@ describe('machine transitions', () => {
   it.each<{
     testCase: string
     input: {
-      machine: Machine<any, any, any, any>
+      machine: Machine<any, any>
       firstTransition: string
       secondTransition: string
     }
@@ -323,7 +278,7 @@ describe('machine transitions', () => {
   it.each<{
     testCase: string
     input: {
-      machine: Machine<any, any, any, any>
+      machine: Machine<any, any>
       firstTransition: string
       secondTransition: string
     }

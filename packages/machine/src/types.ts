@@ -2,7 +2,7 @@
  * State will most likely be a union type,
  * something like 'not fecthed' | 'fetching' | 'fetched' | 'fetch failed'
  *
- * Value will be a single type, it is not likely that the data structure of type
+ * Value will be a single type, it is not likely that the data structure or type
  * will change
  */
 export type MachineBlueprint<State, Value> = {
