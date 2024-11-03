@@ -34,6 +34,10 @@ importers:
         version: 2.1.4
 
   packages/signal:
+    dependencies:
+      '@yugen/yugen':
+        specifier: workspace:^
+        version: link:../yugen
     devDependencies:
       tsup:
         specifier: ^8.3.5
