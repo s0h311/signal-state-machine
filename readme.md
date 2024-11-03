@@ -6,6 +6,62 @@ Yugen models state management as a [deterministic finite automaton](https://en.w
 
 ![](assets/example-fetch-machine.png)
 
+The code looks like this:
+
+```TypeScript
+// stores/todoStore.ts
+
+import { createMachine } from 'yugen'
+
+const NOT_FETCHED = 'not fetched'
+const FETCHING = 'fetching'
+const FETCHED = 'fetched'
+const FETCH_FAILED = 'fetch failed'
+
+export const fetchTransition = 'fetch'
+
+type TodoState = typeof NOT_FETCHED | typeof FETCHING | typeof FETCHED | typeof FETCH_FAILED
+
+export const todoMachine = createMachine<TodoState, string[]>({
+  state: NOT_FETCHED,
+  value: [],
+  transitions: {
+    [fetchTransition]: {
+      sourceState: NOT_FETCHED,
+      targetState: FETCHING,
+      effect: (value) => {
+        return new Promise((resolve, reject) => {
+          setTimeout(() => resolve([...value, 'shopping']), 2000)
+        })
+      },
+      successState: FETCHED,
+      failureState: FETCH_FAILED,
+    },
+  },
+})
+```
+
+You can then use the `todoMachine` like this:
+
+```TypeScript
+// pages/TodoList.ts
+
+import { todoMachine, fetchTransition } from '../stores/todoStore.ts'
+
+console.log(todoMachine.state()) // not fetched
+console.log(todoMachine.value()) // []
+
+todoMachine.transitionTo(fetchTransition)
+
+console.log(todoMachine.state()) // fetching
+console.log(todoMachine.value()) // []
+
+// after 2000ms
+
+console.log(todoMachine.state()) // fetched
+console.log(todoMachine.value()) // ['shopping']
+```
+
 ## Why
 
 Over the past years We observerd that state management in frontend can be quite complex and prone for error. This is why `Yugen` was born as part of my bachelors thesis. Beside the source code, you will also find my thesis here. It includes the design decisions and a comparison to other state management libraries.
