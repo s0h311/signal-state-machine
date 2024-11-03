@@ -1,6 +1,6 @@
 // @ts-check
 
-import { createMachine } from 'signal-state-machine'
+import { createMachine } from 'yugen'
 
 const NOT_FETCHED = 'not fetched'
 const FETCHING = 'fetching'
