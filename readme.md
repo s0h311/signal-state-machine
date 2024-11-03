@@ -2,7 +2,7 @@
 
 > 有限 / _Yūgen_: japanese for finite, as in _deterministic finite automaton_
 
-Yugen models the state management as a [deterministic finite automaton](https://en.wikipedia.org/wiki/Deterministic_finite_automaton). Below is the state machine for a `TodoStore`, which fetches todos.
+Yugen models state management as a [deterministic finite automaton](https://en.wikipedia.org/wiki/Deterministic_finite_automaton). Below is the state machine for a `TodoStore`, which fetches todos.
 
 ![](assets/example-fetch-machine.png)
 
