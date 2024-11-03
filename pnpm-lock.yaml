@@ -22,6 +22,10 @@ importers:
         version: 2.1.4
 
   packages/bijuaru:
+    dependencies:
+      '@yugen/yugen':
+        specifier: workspace:^
+        version: link:../yugen
     devDependencies:
       tsup:
         specifier: ^8.3.5
