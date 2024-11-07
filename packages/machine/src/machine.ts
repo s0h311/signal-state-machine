@@ -1,4 +1,4 @@
-import { TRANSITION_FAILURE } from './consts.ts'
+import { ACCEPT_STATE, TRANSITION_FAILURE } from './consts.ts'
 import IllegalTransitionError from './IllegalTransitionError.ts'
 import { machineRegistery } from './machineRegistery.ts'
 import TransitionNotFoundError from './TransitionNotFoundError.ts'
@@ -82,6 +82,10 @@ export function createMachine<State extends string, Value>(
           transition.sourceState,
           transition.targetState
         )
+      }
+
+      if (transition.targetState === ACCEPT_STATE) {
+        // TODO handle accept state as target
       }
 
       return transitionFn()
