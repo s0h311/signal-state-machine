@@ -14,7 +14,7 @@
     "test:run": "vitest --run"
   },
   "dependencies": {
-    "@yugen/yugen": "workspace:^"
+    "@yugen/machine": "workspace:^"
   },
   "devDependencies": {
     "tsup": "^8.3.5",

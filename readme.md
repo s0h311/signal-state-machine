@@ -11,7 +11,7 @@ The code looks like this:
 ```TypeScript
 // stores/todoStore.ts
 
-import { createMachine } from 'yugen'
+import { createMachine } from '@yugen/machine'
 
 const NOT_FETCHED = 'not fetched'
 const FETCHING = 'fetching'
@@ -68,9 +68,9 @@ Over the past years We observerd that state management in frontend can be quite 
 
 ## What it is
 
-**Framework agnostic:** `@yugen/yugen` does not rely on any UI framework. It is the core of `@yugen/signal` which on the other hand uses the [Stage 1 ECMAScript Signal implementation](https://github.com/tc39/proposal-signals).
+**Framework agnostic:** `@yugen/machine` does not rely on any UI framework. It is the core of `@yugen/signal` which on the other hand uses the [Stage 1 ECMAScript Signal implementation](https://github.com/tc39/proposal-signals).
 
-**Lightweight:** `@yugen/yugen` contains very little code that is easy to understand. We also prioritize ESM.
+**Lightweight:** `@yugen/machine` contains very little code that is easy to understand. We also prioritize ESM.
 
 **Robust:** `Yugen` is well tested and abstracts away [DFAs](https://en.wikipedia.org/wiki/Deterministic_finite_automaton).
 

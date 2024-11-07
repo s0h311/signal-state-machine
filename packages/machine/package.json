@@ -1,5 +1,5 @@
 {
-  "name": "@yugen/bijuaru",
+  "name": "@yugen/machine",
   "description": "",
   "version": "0.0.1",
   "license": "Apache-2.0",
@@ -12,9 +12,6 @@
     "build": "tsup",
     "test": "vitest",
     "test:run": "vitest --run"
-  },
-  "dependencies": {
-    "@yugen/yugen": "workspace:^"
   },
   "devDependencies": {
     "tsup": "^8.3.5",

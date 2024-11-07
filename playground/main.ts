@@ -1,6 +1,6 @@
 // @ts-check
 
-import { createMachine } from 'yugen'
+import { createMachine } from '@yugen/machine'
 
 const NOT_FETCHED = 'not fetched'
 const FETCHING = 'fetching'
