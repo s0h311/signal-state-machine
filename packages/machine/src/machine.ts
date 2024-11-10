@@ -84,7 +84,7 @@ export function createMachine<State extends string, Value>(
         )
       }
 
-      if (transition.targetState === null) {
+      if (transition.targetState === null || transition.targetState === undefined) {
         // TODO handle accept state as target
       }
 
