@@ -4,13 +4,11 @@ import { machineRegistery } from './machineRegistery.ts'
 import TransitionNotFoundError from './TransitionNotFoundError.ts'
 import { Machine, MachineBlueprint } from './types.ts'
 
-export function createMachine<State extends string, Value>(
-  blueprint: MachineBlueprint<State, Value>
-) {
+export function createMachine<S extends string, V>(blueprint: MachineBlueprint<S, V>) {
   const identifier = Symbol()
   const { state, value, transitions } = blueprint
 
-  const machine: Machine<State, Value> = {
+  const machine: Machine<S, V> = {
     _state: state,
     _value: value,
     _transitions: {},

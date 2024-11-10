@@ -1,40 +1,40 @@
 /**
- * State will most likely be a union type,
+ * S will most likely be a union type,
  * something like 'not fecthed' | 'fetching' | 'fetched' | 'fetch failed'
  *
- * Value will be a single type, it is not likely that the data structure or type
+ * V will be a single type, it is not likely that the data structure or type
  * will change
  */
-export type MachineBlueprint<State, Value> = {
-  state: State
-  value: Value
+export type MachineBlueprint<S, V> = {
+  state: S
+  value: V
   transitions: {
     [transitionName: string]:
       | {
-          sourceState: State
-          targetState: State
+          sourceState: S
+          targetState: S
         }
       | {
-          sourceState: State
-          targetState: State
-          action: (value: Value) => Value
+          sourceState: S
+          targetState: S
+          action: (value: V) => V
         }
       | {
-          sourceState: State
-          targetState: State
-          effect: (value: Value) => Promise<Value>
-          successState: State
-          failureState: State
+          sourceState: S
+          targetState: S
+          effect: (value: V) => Promise<V>
+          successState: S
+          failureState: S
         }
   }
 }
 
-export type Machine<State, Value> = {
+export type Machine<S, V> = {
   _identifier: Symbol
-  _state: State
-  _value: Value
+  _state: S
+  _value: V
   _transitions: Record<string, Function>
-  state: () => State
-  value: () => Value
-  transitionTo: (transitionName: string) => Promise<Value>
+  state: () => S
+  value: () => V
+  transitionTo: (transitionName: string) => Promise<V>
 }
