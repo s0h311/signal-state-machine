@@ -213,7 +213,7 @@ describe('machine transitions', () => {
   it.each<{
     testCase: string
     input: {
-      machine: Machine<any, any>
+      machine: Machine<any, any, any, any>
       firstTransition: string
       secondTransition: string
     }
@@ -244,7 +244,7 @@ describe('machine transitions', () => {
   it.each<{
     testCase: string
     input: {
-      machine: Machine<any, any>
+      machine: Machine<any, any, any, any>
       firstTransition: string
       secondTransition: string
     }
@@ -269,7 +269,7 @@ describe('machine transitions', () => {
   it.each<{
     testCase: string
     input: {
-      machine: Machine<any, any>
+      machine: Machine<any, any, any, any>
       firstTransition: string
       secondTransition: string
     }

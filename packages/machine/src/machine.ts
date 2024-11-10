@@ -4,11 +4,11 @@ import { machineRegistery } from './machineRegistery.ts'
 import TransitionNotFoundError from './TransitionNotFoundError.ts'
 import { ActionfulTransition, EffectfulTransition, Machine, MachineBlueprint, SimpleTransition } from './types.ts'
 
-export function createMachine<S extends string, V>(blueprint: MachineBlueprint<S, V>) {
+export function createMachine<S extends string, V>(blueprint: MachineBlueprint<S, V, S, V>) {
   const identifier = Symbol()
   const { state, value, transitions, options } = blueprint
 
-  const machine: Machine<S, V> = {
+  const machine: Machine<S, V, S, V> = {
     _state: state,
     _value: value,
     _transitions: {},
@@ -68,17 +68,20 @@ export function createMachine<S extends string, V>(blueprint: MachineBlueprint<S
   return machine
 }
 
-function simpleTransitionFn<S, V>(machine: Machine<S, V>, transition: SimpleTransition<S>): void {
+function simpleTransitionFn<S, V>(machine: Machine<S, V, S, V>, transition: SimpleTransition<S>): void {
   machine._state = transition.targetState
 }
 
-function actionfulTransitionFn<S, V>(machine: Machine<S, V>, transition: ActionfulTransition<S, V>): void {
+function actionfulTransitionFn<S, V>(machine: Machine<S, V, S, V>, transition: ActionfulTransition<S, V>): void {
   const result = transition.action(machine._value)
   machine._value = result
   machine._state = transition.targetState
 }
 
-function effectfulTransitionFn<S, V>(machine: Machine<S, V>, transition: EffectfulTransition<S, V>): Promise<void> {
+function effectfulTransitionFn<S, V>(
+  machine: Machine<S, V, S, V>,
+  transition: EffectfulTransition<S, V>
+): Promise<void> {
   machine._state = transition.targetState
 
   /**

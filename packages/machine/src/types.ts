@@ -7,9 +7,9 @@ import { TRANSITION_FAILURE } from './consts'
  * V will be a single type, it is not likely that the data structure or type
  * will change
  */
-export type MachineBlueprint<S, V> = {
-  state: S
-  value: V
+export type MachineBlueprint<S, V, CurrS, CurrV> = {
+  state: CurrS
+  value: CurrV
   transitions: {
     [transitionName: string]: SimpleTransition<S> | ActionfulTransition<S, V> | EffectfulTransition<S, V>
   }
@@ -35,7 +35,7 @@ export type EffectfulTransition<S, V> = {
   failureState: S
 }
 
-export type Machine<S, V> = {
+export type Machine<S, V, CurrS, CurrV> = {
   _identifier: Symbol
   _state: S
   _value: V
@@ -47,7 +47,16 @@ export type Machine<S, V> = {
 
 export type MachineOptions = {
   compareStateFn?: <S>(s1: S, s2: S) => boolean
-  simpleTransitionFn?: () => <S, V>(machine: Machine<S, V>, transition: SimpleTransition<S>) => void
-  actionfulTransitionFn?: () => <S, V>(machine: Machine<S, V>, transition: SimpleTransition<S>) => void
-  effectfulTransitionFn?: () => <S, V>(machine: Machine<S, V>, transition: SimpleTransition<S>) => void
+  simpleTransitionFn?: () => <S, V, CurrS, CurrV>(
+    machine: Machine<S, V, CurrS, CurrV>,
+    transition: SimpleTransition<S>
+  ) => void
+  actionfulTransitionFn?: () => <S, V, CurrS, CurrV>(
+    machine: Machine<S, V, CurrS, CurrV>,
+    transition: SimpleTransition<S>
+  ) => void
+  effectfulTransitionFn?: () => <S, V, CurrS, CurrV>(
+    machine: Machine<S, V, CurrS, CurrV>,
+    transition: SimpleTransition<S>
+  ) => void
 }
