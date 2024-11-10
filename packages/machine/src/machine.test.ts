@@ -227,23 +227,19 @@ describe('machine transitions', () => {
         firstTransition: fetchTransition,
         secondTransition: fetchTransition,
       },
-      expected: new IllegalTransitionError('fetched', fetchTransition, 'initial', 'fetching')
-        .message,
+      expected: new IllegalTransitionError('fetched', fetchTransition, 'initial', 'fetching').message,
     },
-  ])(
-    '$testCase',
-    ({ input: { machine, firstTransition, secondTransition }, expected }): Promise<void> => {
-      return new Promise((done) => {
-        machine.transitionTo(firstTransition).then(() => {
-          expect(() => machine.transitionTo(secondTransition)).toThrowError(expected)
+  ])('$testCase', ({ input: { machine, firstTransition, secondTransition }, expected }): Promise<void> => {
+    return new Promise((done) => {
+      machine.transitionTo(firstTransition).then(() => {
+        expect(() => machine.transitionTo(secondTransition)).toThrowError(expected)
 
-          done()
-        })
-
-        vi.runAllTimers()
+        done()
       })
-    }
-  )
+
+      vi.runAllTimers()
+    })
+  })
 
   it.each<{
     testCase: string
@@ -262,12 +258,7 @@ describe('machine transitions', () => {
         firstTransition: addToCartTransition,
         secondTransition: addToCartTransition,
       },
-      expected: new IllegalTransitionError(
-        'cartWithItem',
-        addToCartTransition,
-        'emptyCart',
-        'cartWithItem'
-      ).message,
+      expected: new IllegalTransitionError('cartWithItem', addToCartTransition, 'emptyCart', 'cartWithItem').message,
     },
   ])('$testCase', ({ input: { machine, firstTransition, secondTransition }, expected }) => {
     machine.transitionTo(firstTransition)

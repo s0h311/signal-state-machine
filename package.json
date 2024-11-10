@@ -8,6 +8,7 @@
     "test": "pnpm --filter './packages/**' test:run"
   },
   "devDependencies": {
+    "prettier": "^3.3.3",
     "tsup": "^8.3.5",
     "tsx": "^4.19.2",
     "typescript": "^5.6.3",
