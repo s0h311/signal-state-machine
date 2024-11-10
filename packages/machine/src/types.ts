@@ -1,5 +1,3 @@
-import { ACCEPT_STATE } from './consts'
-
 /**
  * State will most likely be a union type,
  * something like 'not fecthed' | 'fetching' | 'fetched' | 'fetch failed'
@@ -14,31 +12,29 @@ export type MachineBlueprint<State, Value> = {
     [transitionName: string]:
       | {
           sourceState: State
-          targetState: State | AcceptState
+          targetState: State
         }
       | {
           sourceState: State
-          targetState: State | AcceptState
+          targetState: State
           action: (value: Value) => Value
         }
       | {
           sourceState: State
           targetState: State
           effect: (value: Value) => Promise<Value>
-          successState: State | AcceptState
-          failureState: State | AcceptState
+          successState: State
+          failureState: State
         }
   }
 }
 
 export type Machine<State, Value> = {
   _identifier: Symbol
-  _state: State | AcceptState
+  _state: State
   _value: Value
   _transitions: Record<string, Function>
-  state: () => State | AcceptState
+  state: () => State
   value: () => Value
   transitionTo: (transitionName: string) => Promise<Value>
 }
-
-export type AcceptState = typeof ACCEPT_STATE
