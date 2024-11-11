@@ -5,7 +5,7 @@ export default defineConfig({
   splitting: true,
   // sourcemap: true,
   clean: true,
-  target: 'es2022',
+  target: 'ESNext',
   minify: true,
   outDir: 'dist',
   format: ['cjs', 'esm'],

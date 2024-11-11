@@ -1,19 +1,16 @@
-import { TRANSITION_FAILURE } from './consts'
-
 /**
  * S will most likely be a union type,
- * something like 'not fecthed' | 'fetching' | 'fetched' | 'fetch failed'
+ * something like 'not fetched' | 'fetching' | 'fetched' | 'fetch failed'
  *
  * V will be a single type, it is not likely that the data structure or type
  * will change
  */
-export type MachineBlueprint<S, V, CurrS, CurrV> = {
-  state: CurrS
-  value: CurrV
+export type MachineBlueprint<S, V, CurrV> = {
+  state: S
+  value: V
   transitions: {
-    [transitionName: string]: SimpleTransition<S> | ActionfulTransition<S, V> | EffectfulTransition<S, V>
+    [transitionName: string]: SimpleTransition<S> | ActionfulTransition<S, V, CurrV> | EffectfulTransition<S, V, CurrV>
   }
-  options?: MachineOptions
 }
 
 export type SimpleTransition<S> = {
@@ -21,42 +18,30 @@ export type SimpleTransition<S> = {
   targetState: S
 }
 
-export type ActionfulTransition<S, V> = {
+export type ActionfulTransition<S, V, CurrV> = {
   sourceState: S
   targetState: S
-  action: (value: V) => V
+  action: (value: CurrV) => V
 }
 
-export type EffectfulTransition<S, V> = {
+export type EffectfulTransition<S, V, CurrV> = {
   sourceState: S
   targetState: S
-  effect: (value: V) => Promise<V>
+  effect: (value: CurrV) => Promise<V>
   successState: S
   failureState: S
 }
 
-export type Machine<S, V, CurrS, CurrV> = {
+export type AbstractMachine<S, V, CurrS, CurrV> = {
   _identifier: Symbol
-  _state: S
-  _value: V
   _transitions: Record<string, Function>
-  state: () => S
-  value: () => V
   transitionTo: (transitionName: string) => Promise<V>
+  get state(): CurrS
+  set state(s: S)
+  get value(): CurrV
+  set value(s: V)
 }
 
-export type MachineOptions = {
-  compareStateFn?: <S>(s1: S, s2: S) => boolean
-  simpleTransitionFn?: () => <S, V, CurrS, CurrV>(
-    machine: Machine<S, V, CurrS, CurrV>,
-    transition: SimpleTransition<S>
-  ) => void
-  actionfulTransitionFn?: () => <S, V, CurrS, CurrV>(
-    machine: Machine<S, V, CurrS, CurrV>,
-    transition: SimpleTransition<S>
-  ) => void
-  effectfulTransitionFn?: () => <S, V, CurrS, CurrV>(
-    machine: Machine<S, V, CurrS, CurrV>,
-    transition: SimpleTransition<S>
-  ) => void
+export type MachineOptions<S, CurrS> = {
+  compareStateFn: (s1: S | CurrS, s2: S | CurrS) => boolean
 }

@@ -2,7 +2,7 @@ import { createMachine } from './machine.ts'
 import IllegalTransitionError from './IllegalTransitionError.ts'
 import { TRANSITION_FAILURE } from './consts.ts'
 import TransitionNotFoundError from './TransitionNotFoundError.ts'
-import { Machine } from './types.ts'
+import { AbstractMachine } from './types.ts'
 
 const someSimpleTransition = 'someSimpleTransition'
 function getSimpleMachine() {
@@ -90,12 +90,12 @@ describe('machine creation', () => {
   it('should have correct initialState', () => {
     const machine = getSimpleMachine()
 
-    const actualState = machine.state()
+    const actualState = machine.state
     const expectedState = 'someState'
 
     expect(actualState).toEqual(expectedState)
 
-    const actualValue = machine.value()
+    const actualValue = machine.value
     const expectedValue = 'who cares?'
 
     expect(actualValue).toEqual(expectedValue)
@@ -104,12 +104,12 @@ describe('machine creation', () => {
   it('should have correct initialState, if it is effectfull', () => {
     const machine = getSuccessfulEffectFullMachine()
 
-    const actualState = machine.state()
+    const actualState = machine.state
     const expectedState = 'initial'
 
     expect(actualState).toEqual(expectedState)
 
-    const actualValue = machine.value()
+    const actualValue = machine.value
     const expectedValue: string[] = []
 
     expect(actualValue).toEqual(expectedValue)
@@ -125,12 +125,12 @@ describe('machine transitions', () => {
     const machine = getSimpleMachine()
     machine.transitionTo(someSimpleTransition)
 
-    const actualState = machine.state()
+    const actualState = machine.state
     const expectedState = 'someTargetState'
 
     expect(actualState).toEqual(expectedState)
 
-    const actualValue = machine.value()
+    const actualValue = machine.value
     const expectedValue = 'who cares?'
 
     expect(actualValue).toEqual(expectedValue)
@@ -141,7 +141,7 @@ describe('machine transitions', () => {
 
     machine.transitionTo(fetchTransition)
 
-    const actualState = machine.state()
+    const actualState = machine.state
 
     vi.runAllTimers()
 
@@ -155,12 +155,12 @@ describe('machine transitions', () => {
       const machine = getSuccessfulEffectFullMachine()
 
       machine.transitionTo(fetchTransition).then(() => {
-        const actualState = machine.state()
+        const actualState = machine.state
         const expectedState = 'fetched'
 
         expect(actualState).toEqual(expectedState)
 
-        const actualValue = machine.value()
+        const actualValue = machine.value
         const expectedValue = ['London', 'Hamburg', 'Los Angeles']
 
         expect(actualValue).toEqual(expectedValue)
@@ -177,12 +177,12 @@ describe('machine transitions', () => {
       const machine = getFailingEffectFullMachine()
 
       machine.transitionTo(fetchTransition).then(() => {
-        const actualState = machine.state()
+        const actualState = machine.state
         const expectedState = 'fetchFailed'
 
         expect(actualState).toEqual(expectedState)
 
-        const actualValue = machine.value()
+        const actualValue = machine.value
         const expectedValue: string[] = []
 
         expect(actualValue).toEqual(expectedValue)
@@ -199,12 +199,12 @@ describe('machine transitions', () => {
 
     machine.transitionTo(addToCartTransition)
 
-    const actualState = machine.state()
+    const actualState = machine.state
     const expectedState = 'cartWithItem'
 
     expect(actualState).toEqual(expectedState)
 
-    const actualValue = machine.value()
+    const actualValue = machine.value
     const expectedValue = ['newItem1']
 
     expect(actualValue).toEqual(expectedValue)
@@ -213,7 +213,7 @@ describe('machine transitions', () => {
   it.each<{
     testCase: string
     input: {
-      machine: Machine<any, any, any, any>
+      machine: AbstractMachine<any, any, any, any>
       firstTransition: string
       secondTransition: string
     }
@@ -244,7 +244,7 @@ describe('machine transitions', () => {
   it.each<{
     testCase: string
     input: {
-      machine: Machine<any, any, any, any>
+      machine: AbstractMachine<any, any, any, any>
       firstTransition: string
       secondTransition: string
     }
@@ -269,7 +269,7 @@ describe('machine transitions', () => {
   it.each<{
     testCase: string
     input: {
-      machine: Machine<any, any, any, any>
+      machine: AbstractMachine<any, any, any, any>
       firstTransition: string
       secondTransition: string
     }
