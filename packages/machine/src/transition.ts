@@ -12,7 +12,8 @@ import { TRANSITION_FAILURE } from './consts.ts'
 
 export function _transitionTo<S, V, CurrS, CurrV>(
   this: AbstractMachine<S, V, CurrS, CurrV>,
-  transitionName: string
+  transitionName: string,
+  ...args: any[]
 ): Promise<V> {
   const transition = this._transitions[transitionName]
 
@@ -20,7 +21,7 @@ export function _transitionTo<S, V, CurrS, CurrV>(
     throw new TransitionNotFoundError(transitionName)
   }
 
-  return transition()
+  return transition(...args)
 }
 
 export function _getTransitionMap<S, V, CurrS, CurrV>(
@@ -34,17 +35,17 @@ export function _getTransitionMap<S, V, CurrS, CurrV>(
     const isEffectful = 'effect' in transition
     const isActionful = 'action' in transition
 
-    let transitionFn = () => simpleTransitionFn(machine, transition)
+    let transitionFn = (..._args: any[]) => simpleTransitionFn(machine, transition)
 
     if (isEffectful) {
-      transitionFn = () => effectfulTransitionFn(machine, transition)
+      transitionFn = (...args: any[]) => effectfulTransitionFn(machine, transition, ...args)
     }
 
     if (isActionful) {
-      transitionFn = () => actionfulTransitionFn(machine, transition)
+      transitionFn = (...args: any[]) => actionfulTransitionFn(machine, transition, ...args)
     }
 
-    result[transitionName] = () => {
+    result[transitionName] = (...args: any[]) => {
       if (!options.compareStateFn(machine.state, transition.sourceState)) {
         throw new IllegalTransitionError(machine.state, transitionName, transition.sourceState, transition.targetState)
       }
@@ -53,7 +54,7 @@ export function _getTransitionMap<S, V, CurrS, CurrV>(
         // TODO handle accept state as target
       }
 
-      return transitionFn()
+      return transitionFn(...args)
     }
   }
 
@@ -69,15 +70,17 @@ function simpleTransitionFn<S, V, CurrS, CurrV>(
 
 function actionfulTransitionFn<S, V, CurrS, CurrV>(
   machine: AbstractMachine<S, V, CurrS, CurrV>,
-  transition: ActionfulTransition<S, V, CurrV>
+  transition: ActionfulTransition<S, V, CurrV>,
+  ...args: any[]
 ): void {
-  machine.value = transition.action(machine.value)
+  machine.value = transition.action(machine.value, ...args)
   machine.state = transition.targetState
 }
 
 function effectfulTransitionFn<S, V, CurrS, CurrV>(
   machine: AbstractMachine<S, V, CurrS, CurrV>,
-  transition: EffectfulTransition<S, V, CurrV>
+  transition: EffectfulTransition<S, V, CurrV>,
+  ...args: any[]
 ): Promise<void> {
   machine.state = transition.targetState
 
@@ -86,7 +89,7 @@ function effectfulTransitionFn<S, V, CurrS, CurrV>(
    * will be set as next.
    */
   return transition
-    .effect(machine.value)
+    .effect(machine.value, ...args)
     .then((result) => {
       if (result === TRANSITION_FAILURE) {
         machine.state = transition.failureState

@@ -2,9 +2,8 @@ import { _machineRegistry } from './machineRegistry.ts'
 import { AbstractMachine, MachineBlueprint } from './types.ts'
 import { _getTransitionMap, _transitionTo } from './transition.ts'
 
-export function createMachine<S, V>(blueprint: MachineBlueprint<S, V, V>) {
+export function createMachine<S, V>( { state, value, transitions }: MachineBlueprint<S, V, V>) {
   const identifier = Symbol()
-  const { state, value, transitions } = blueprint
 
   class Machine implements AbstractMachine<S, V, S, V> {
     _identifier = identifier

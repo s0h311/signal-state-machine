@@ -4,11 +4,9 @@ import { _getTransitionMap, _transitionTo } from '@yugen/machine'
 import { _machineRegistry } from '@yugen/machine'
 
 export function createSignalMachine<S, V>(
-  blueprint: MachineBlueprint<S, V, Signal.State<V>>
+  { state, value, transitions }: MachineBlueprint<S, V, Signal.State<V>>
 ): AbstractMachine<S, V, Signal.State<S>, Signal.State<V>> {
   const identifier = Symbol()
-
-  const { state, value, transitions } = blueprint
 
   class SignalMachine implements AbstractMachine<S, V, Signal.State<S>, Signal.State<V>> {
     _identifier = identifier

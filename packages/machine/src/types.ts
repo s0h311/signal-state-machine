@@ -21,13 +21,13 @@ export type SimpleTransition<S> = {
 export type ActionfulTransition<S, V, CurrV> = {
   sourceState: S
   targetState: S
-  action: (value: CurrV) => V
+  action: (currentValue: CurrV, ...args: any[]) => V
 }
 
 export type EffectfulTransition<S, V, CurrV> = {
   sourceState: S
   targetState: S
-  effect: (value: CurrV) => Promise<V>
+  effect: (currentValue: CurrV, ...args: any[]) => Promise<V>
   successState: S
   failureState: S
 }

@@ -4,29 +4,39 @@ import { TRANSITION_FAILURE } from './consts.ts'
 import TransitionNotFoundError from './TransitionNotFoundError.ts'
 import { AbstractMachine } from './types.ts'
 
-const someSimpleTransition = 'someSimpleTransition'
+const notAcceptedCookies = 'NOT_ACCEPTED_COOKIES'
+const acceptedCookies = 'ACCEPTED_COOKIES'
+
+const acceptCookiesTransition = 'accept cookies'
+
 function getSimpleMachine() {
   return createMachine({
-    state: 'someState',
-    value: 'who cares?',
+    state: notAcceptedCookies,
+    value: null,
     transitions: {
-      [someSimpleTransition]: {
-        sourceState: 'someState',
-        targetState: 'someTargetState',
+      [acceptCookiesTransition]: {
+        sourceState: notAcceptedCookies,
+        targetState: acceptedCookies,
       },
     },
   })
 }
 
+const notFetched = 'NOT_FETCHED'
+const fetching = 'FETCHING'
+const fetched = 'FETCHED'
+const fetchFailed = 'FETCH_FAILED'
+
 const fetchTransition = 'fetch'
-function getSuccessfulEffectFullMachine() {
+
+function getSuccessfulEffectfulMachine() {
   return createMachine({
-    state: 'initial',
+    state: notFetched,
     value: [],
     transitions: {
       [fetchTransition]: {
-        sourceState: 'initial',
-        targetState: 'fetching',
+        sourceState: notFetched,
+        targetState: fetching,
         effect: (): Promise<string[]> => {
           return new Promise((resolve) => {
             const cities = ['London', 'Hamburg', 'Los Angeles']
@@ -34,52 +44,56 @@ function getSuccessfulEffectFullMachine() {
             setTimeout(() => resolve(cities), 3000)
           })
         },
-        successState: 'fetched',
-        failureState: 'fetchFailed',
+        successState: fetched,
+        failureState: fetchFailed,
       },
     },
   })
 }
 
-function getFailingEffectFullMachine() {
+function getFailingEffectfulMachine() {
   return createMachine({
-    state: 'initial',
+    state: notFetched,
     value: [],
     transitions: {
       [fetchTransition]: {
-        sourceState: 'initial',
-        targetState: 'fetching',
-        effect: () => {
+        sourceState: notFetched,
+        targetState: fetching,
+        effect: (): Promise<string[]> => {
           return new Promise((_, reject) => {
             setTimeout(() => reject(TRANSITION_FAILURE), 3000)
           })
         },
-        successState: 'fetched',
-        failureState: 'fetchFailed',
+        successState: fetched,
+        failureState: fetchFailed,
       },
     },
   })
 }
 
+const emptyCart = 'EMPTY_CART'
+const cartWithItem = 'CART_WITH_ITEM'
+
 const addToCartTransition = 'addToCart'
 const addToCartAgainTransition = 'addToCartAgain'
+
 function getActionFullMachine() {
   return createMachine({
-    state: 'emptyCart',
+    state: emptyCart,
     value: [],
     transitions: {
       [addToCartTransition]: {
-        sourceState: 'emptyCart',
-        targetState: 'cartWithItem',
-        action: (value: string[]) => {
-          return [...value, 'newItem1']
+        sourceState: emptyCart,
+        targetState: cartWithItem,
+        action: (value: string[], newItem: string) => {
+          return [...value, newItem]
         },
       },
       [addToCartAgainTransition]: {
-        sourceState: 'cartWithItem',
-        targetState: 'cartWithItem',
-        action: (value: string[]) => {
-          return [...value, 'newItem2']
+        sourceState: cartWithItem,
+        targetState: cartWithItem,
+        action: (value: string[], newItem: string) => {
+          return [...value, newItem]
         },
       },
     },
@@ -91,53 +105,40 @@ describe('machine creation', () => {
     const machine = getSimpleMachine()
 
     const actualState = machine.state
-    const expectedState = 'someState'
-
-    expect(actualState).toEqual(expectedState)
+    expect(actualState).toEqual(notAcceptedCookies)
 
     const actualValue = machine.value
-    const expectedValue = 'who cares?'
-
-    expect(actualValue).toEqual(expectedValue)
+    expect(actualValue).toEqual(null)
   })
 
   it('should have correct initialState, if it is effectfull', () => {
-    const machine = getSuccessfulEffectFullMachine()
+    const machine = getSuccessfulEffectfulMachine()
 
     const actualState = machine.state
-    const expectedState = 'initial'
-
-    expect(actualState).toEqual(expectedState)
+    expect(actualState).toEqual(notFetched)
 
     const actualValue = machine.value
-    const expectedValue: string[] = []
-
-    expect(actualValue).toEqual(expectedValue)
+    expect(actualValue).toEqual([])
   })
 })
 
 describe('machine transitions', () => {
   beforeEach(() => vi.useFakeTimers())
-
   afterEach(() => vi.restoreAllMocks())
 
   it('should transition to the correct targetState', () => {
     const machine = getSimpleMachine()
-    machine.transitionTo(someSimpleTransition)
+    machine.transitionTo(acceptCookiesTransition)
 
     const actualState = machine.state
-    const expectedState = 'someTargetState'
-
-    expect(actualState).toEqual(expectedState)
+    expect(actualState).toEqual(acceptedCookies)
 
     const actualValue = machine.value
-    const expectedValue = 'who cares?'
-
-    expect(actualValue).toEqual(expectedValue)
+    expect(actualValue).toEqual(null)
   })
 
   it('should transition to correct targetState when an effect is triggered', () => {
-    const machine = getSuccessfulEffectFullMachine()
+    const machine = getSuccessfulEffectfulMachine()
 
     machine.transitionTo(fetchTransition)
 
@@ -145,69 +146,47 @@ describe('machine transitions', () => {
 
     vi.runAllTimers()
 
-    const expectedState = 'fetching'
-
-    expect(actualState).toEqual(expectedState)
+    expect(actualState).toEqual(fetching)
   })
 
-  it('should transition to correct successState after an effect is executed', (): Promise<void> => {
-    return new Promise((done) => {
-      const machine = getSuccessfulEffectFullMachine()
+  it('should transition to correct successState after an effect is executed', () => {
+    const machine = getSuccessfulEffectfulMachine()
 
-      machine.transitionTo(fetchTransition).then(() => {
-        const actualState = machine.state
-        const expectedState = 'fetched'
+    machine.transitionTo(fetchTransition).then(() => {
+      const actualState = machine.state
+      expect(actualState).toEqual(fetched)
 
-        expect(actualState).toEqual(expectedState)
-
-        const actualValue = machine.value
-        const expectedValue = ['London', 'Hamburg', 'Los Angeles']
-
-        expect(actualValue).toEqual(expectedValue)
-
-        done()
-      })
-
-      vi.runAllTimers()
+      const actualValue = machine.value
+      expect(actualValue).toEqual(['London', 'Hamburg', 'Los Angeles'])
     })
+
+    vi.runAllTimers()
   })
 
-  it('should transition to correct failureState after an efffect is failed', (): Promise<void> => {
-    return new Promise((done) => {
-      const machine = getFailingEffectFullMachine()
+  it('should transition to correct failureState after an effect is failed', () => {
+    const machine = getFailingEffectfulMachine()
 
-      machine.transitionTo(fetchTransition).then(() => {
-        const actualState = machine.state
-        const expectedState = 'fetchFailed'
+    machine.transitionTo(fetchTransition).then(() => {
+      const actualState = machine.state
+      expect(actualState).toEqual(fetchFailed)
 
-        expect(actualState).toEqual(expectedState)
-
-        const actualValue = machine.value
-        const expectedValue: string[] = []
-
-        expect(actualValue).toEqual(expectedValue)
-
-        done()
-      })
-
-      vi.runAllTimers()
+      const actualValue = machine.value
+      expect(actualValue).toEqual([])
     })
+
+    vi.runAllTimers()
   })
 
   it('should transitions to targetState with correct value after an action is executed', () => {
     const machine = getActionFullMachine()
 
-    machine.transitionTo(addToCartTransition)
+    machine.transitionTo(addToCartTransition, 'newItem1')
 
     const actualState = machine.state
-    const expectedState = 'cartWithItem'
-
-    expect(actualState).toEqual(expectedState)
+    expect(actualState).toEqual(cartWithItem)
 
     const actualValue = machine.value
-    const expectedValue = ['newItem1']
-
-    expect(actualValue).toEqual(expectedValue)
+    expect(actualValue).toEqual(['newItem1'])
   })
 
   it.each<{
@@ -223,22 +202,18 @@ describe('machine transitions', () => {
       testCase:
         'should throw an IllegalTransitionError, if effectful transition from sourceState to targetState is not allowed even if they are the same',
       input: {
-        machine: getSuccessfulEffectFullMachine(),
+        machine: getSuccessfulEffectfulMachine(),
         firstTransition: fetchTransition,
         secondTransition: fetchTransition,
       },
-      expected: new IllegalTransitionError('fetched', fetchTransition, 'initial', 'fetching').message,
+      expected: new IllegalTransitionError(fetched, fetchTransition, notFetched, fetching).message,
     },
-  ])('$testCase', ({ input: { machine, firstTransition, secondTransition }, expected }): Promise<void> => {
-    return new Promise((done) => {
-      machine.transitionTo(firstTransition).then(() => {
-        expect(() => machine.transitionTo(secondTransition)).toThrowError(expected)
-
-        done()
-      })
-
-      vi.runAllTimers()
+  ])('$testCase', ({ input: { machine, firstTransition, secondTransition }, expected }) => {
+    machine.transitionTo(firstTransition).then(() => {
+      expect(() => machine.transitionTo(secondTransition)).toThrowError(expected)
     })
+
+    vi.runAllTimers()
   })
 
   it.each<{
@@ -258,7 +233,7 @@ describe('machine transitions', () => {
         firstTransition: addToCartTransition,
         secondTransition: addToCartTransition,
       },
-      expected: new IllegalTransitionError('cartWithItem', addToCartTransition, 'emptyCart', 'cartWithItem').message,
+      expected: new IllegalTransitionError(cartWithItem, addToCartTransition, emptyCart, cartWithItem).message,
     },
   ])('$testCase', ({ input: { machine, firstTransition, secondTransition }, expected }) => {
     machine.transitionTo(firstTransition)
@@ -288,11 +263,11 @@ describe('machine transitions', () => {
 
     machine.transitionTo(secondTransition)
 
-    expect(1).toBe(1)
+    // asserts true at this points
   })
 
   it('should throw a TransitionNotFoundError, if transitionTo is called with a not existing transitionName', () => {
-    const machine = getSuccessfulEffectFullMachine()
+    const machine = getFailingEffectfulMachine()
 
     const expectedError = new TransitionNotFoundError('someTransitionThatNotExists')
 
