@@ -50,10 +50,6 @@ export function _getTransitionMap<S, V, CurrS, CurrV>(
         throw new IllegalTransitionError(machine.state, transitionName, transition.sourceState, transition.targetState)
       }
 
-      if (transition.targetState === null || transition.targetState === undefined) {
-        // TODO handle accept state as target
-      }
-
       return transitionFn(...args)
     }
   }
