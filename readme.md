@@ -91,3 +91,7 @@ in Angular and `@preact/signals-react` for React.
 
 **Traceable:** `Yugen`, unlike `Redux` and `NgRx` does **not** have devtools yet. So you cannot trace changes in state 
 easily.
+
+## Further
+
+- [Design Philosophy](./docs/design-philosophy)
