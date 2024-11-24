@@ -81,7 +81,7 @@ function effectfulTransitionFn<S, V, CurrS, CurrV>(
   machine.state = transition.targetState
 
   /**
-   * If the promise returns TRANSITION_FAILURE or it rejects failureState
+   * If the promise returns TRANSITION_FAILURE, or it rejects, failureState
    * will be set as next.
    */
   return transition
