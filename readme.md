@@ -94,4 +94,4 @@ easily.
 
 ## Further
 
-- [Design Philosophy](./docs/design-philosophy)
+- [Design Philosophy](./docs/design-philosophy.md)
