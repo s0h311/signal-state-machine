@@ -18,7 +18,7 @@ stateDiagram-v2
 
 with:
 
-```math
+```
 Q = {s1, s2, s3, error}
 q0 = s1
 Σ = {t1, t2}
