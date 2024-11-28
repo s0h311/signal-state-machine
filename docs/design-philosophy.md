@@ -58,7 +58,8 @@ Because DFAs don't have an extra memory unlike [PDAs](https://en.wikipedia.org/w
 
 The transitions in `yugen` however follow strictly the concept of DFAs.
 
-> **Important:** Moving forward, only "legal" transitions will be drawn in diagrams. Assume transitions that are not
+> [!IMPORTANT]
+> Moving forward, only "legal" transitions will be drawn in diagrams. Assume transitions that are not
 > drawn leading to an "error" state which also will not be drawn.
 
 ## Internals of a machine
