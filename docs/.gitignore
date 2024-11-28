@@ -1,2 +1,2 @@
-.vitepress
+.vitepress/cache
 !.vitepress/config.ts
