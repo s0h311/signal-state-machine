@@ -55,7 +55,6 @@ const m = createMachine({
 Note that `createMachine` also needs a `value` which is not possible with DFAs.
 Because DFAs don't have an extra memory unlike [PDAs](https://en.wikipedia.org/wiki/Pushdown_automaton) and [Turing Machines](https://en.wikipedia.org/wiki/Turing_machine).
 
-
 The transitions in `yugen` however follow strictly the concept of DFAs.
 
 > [!IMPORTANT]
