@@ -15,6 +15,9 @@ export default defineConfig({
         items: [
           { text: 'What is Yugen?', link: '/what-is-yugen' },
           { text: 'Design Philosophy', link: '/design-philosophy' },
+          { text: 'Example Project', link: '/example-project' },
+          { text: 'Comparison', link: '/comparison' },
+          { text: 'Developing Yugen', link: '/developing-yugen' },
         ],
       },
     ],

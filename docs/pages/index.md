@@ -5,21 +5,23 @@ layout: home
 hero:
   name: "Yugen"
   text: "A framework-agnostic, lightweight, robust and intuitive state manager"
-  tagline: My great project tagline
+  tagline: 
   actions:
     - theme: brand
-      text: Markdown Examples
-      link: /markdown-examples
+      text: Learn more
+      link: /what-is-yugen
     - theme: alt
-      text: API Examples
-      link: /api-examples
+      text: Try out
+      link: /example-project
 
 features:
-  - title: Feature A
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature B
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
-  - title: Feature C
-    details: Lorem ipsum dolor sit amet, consectetur adipiscing elit
+  - title: Framework-agnostic 
+    details: Some thing
+  - title: Lightweight
+    details: Some thing
+  - title: Robust
+    details: Some thing
+  - title: Intuitive
+    details: Some thing
 ---
 
