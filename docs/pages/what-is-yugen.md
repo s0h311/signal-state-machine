@@ -5,7 +5,7 @@
 Yugen models state management as a [deterministic finite automaton](https://en.wikipedia.org/wiki/Deterministic_finite_automaton).
 Below is the state machine for a `TodoStore`, which fetches todos.
 
-![](assets/example-fetch-machine.png)
+![](../public/example-fetch-machine.png)
 
 The code looks like this:
 
