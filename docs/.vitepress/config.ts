@@ -1,9 +1,12 @@
-import { defineConfig } from 'vitepress'
+import { withMermaid } from 'vitepress-plugin-mermaid'
 
-export default defineConfig({
+export default withMermaid({
   title: 'Yugen',
   description: 'A framework-agnostic, lightweight, robust and intuitive state manager',
   srcDir: 'pages',
+  markdown: {
+    math: true,
+  },
   themeConfig: {
     nav: [
       { text: 'Home', link: '/' },

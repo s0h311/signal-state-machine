@@ -9,9 +9,8 @@ Below is the state machine for a `TodoStore`, which fetches todos.
 
 The code looks like this:
 
-::: code-group
-
-```TypeScript [stores/todoStore.ts]
+```TypeScript
+// stores/todoStore.ts
 import { createMachine } from '@yugen/machine'
 
 const notFetched = 'not fetched'
@@ -42,13 +41,10 @@ export const todoMachine = createMachine<TodoState, string[]>({
 })
 ```
 
-:::
-
 You can then use the `todoMachine` like this:
 
 ```TypeScript
-// pages/TodoList.ts
-
+// pages/todoList.ts
 import { todoMachine, fetchTransition } from '../stores/todoStore.ts'
 
 console.log(todoMachine.state) // not fetched
