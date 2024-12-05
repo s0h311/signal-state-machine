@@ -14,8 +14,9 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
-env:
-  GITHUB_WORKSPACE: ./docs
+defaults:
+  run:
+    working-directory: ./docs
 
 jobs:
   build:
