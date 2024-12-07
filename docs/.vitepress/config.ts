@@ -26,4 +26,9 @@ export default withMermaid({
     ],
     socialLinks: [{ icon: 'github', link: 'https://github.com/s0h311/yugen' }],
   },
+  vite: {
+    optimizeDeps: {
+      include: ['mermaid'],
+    },
+  },
 })
